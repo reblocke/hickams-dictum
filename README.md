@@ -1,3 +1,5 @@
-Stata version 18 code. 
+#Code for Analysis of Hickam's Dictum Survey Data
 
-Requires Data-file (not currently present)
+Performed with Stata version 18
+
+Requires Data-file (not yet present)
