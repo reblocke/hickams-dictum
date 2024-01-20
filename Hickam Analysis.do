@@ -38,27 +38,60 @@ rename Whatbestdescribesyourareaof specialty
 
 destring answer pgy_cat specialty, replace
 
-label define specialty_lab 1 "General Internal Medicine/Hospitalist/Family Practice" 2 "IM subspecialty" 3 "Emergency" 4 "Other"
+label define specialty_lab 1 "Gen IM/Hosp./Family" 2 "IM subspecialty" 3 "Emergency" 4 "Other"
 label values specialty specialty_lab
 
 label define pgy_cat_lab 1 "Layperson/Allied Health" 2 "Medical Student" 3 "PA/DNP" 4 "PGY1" 5 "PGY2-3" 6 "PGY4-5" 7 "PGY6-10" 8 "PGY 11-20" 9 "PGY 21+"
 label values pgy_cat pgy_cat_lab
 label variable pgy_cat "Training"
 
-label define pgy_binary_lab 0 "PGY 0-9" 1 "PGY 10+"
 recode answer (1 = 0) (2 = 0) (3 = 0) (4 = 1), generate(answer_correct)
 label variable answer_correct "Correct Responses"
-
 label define binary_lab 0 "Incorrect" 1 "Correct"
 label values answer_correct binary_lab
 
 label define pgy_groupings 0 "Pre" 1 "PGY 0-5" 2 "PGY 6+"
-recode pgy_cat (0 = .) (1 = 0) (2 = 0) (3 = 0) (4 = 1) (5 = 1) (6 = 1) (7 = 2) (8 = 2) (9= 2), generate(trainee_status_cat)
+recode pgy_cat (0 = .) (1 = .) (2 = 0) (3 = .) (4 = 1) (5 = 1) (6 = 1) (7 = 2) (8 = 2) (9= 2), generate(trainee_status_cat)
 label variable trainee_status_cat "Trainee Status"
 label values trainee_status_cat pgy_groupings
 
-recode pgy_cat (0 = .) (1 = 0) (2 = 0) (3 = 0) (4 = 0) (5 = 0) (6 = 0) (7 = 0) (8 = 1) (9 = 1), generate(pgy_binary) 
-label values pgy_binary pgy_binary_lab
+
+// Summarization
+
+//by exposure
+table1_mc, by(pgy_cat) ///
+	vars( ///
+	answer_correct bin %4.1f \ ///
+	specialty cat %4.1f \ ///
+	) ///
+percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol total(before) saving("Results and Figures/$S_DATE/Correct by Training.xlsx", replace)
+
+//by outcome: 
+table1_mc, by(answer_correct) ///
+	vars( ///
+	pgy_cat cat %4.1f \ ///
+	specialty cat %4.1f \ ///
+	) ///
+percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol catrowperc statistic saving("Results and Figures/$S_DATE/training and specialty by correct.xlsx", replace)
+
+// P-value for trend
+nptrend answer_correct, group(pgy_cat) carm
+
+nptrend answer_correct, group(trainee_status_cat) carm
+
+
+//Cochrane Armitage test for trend; nptrend
+preserve 
+drop if pgy_cat == 1	//laypeople
+drop if pgy_cat == 3	//PA
+nptrend answer_correct, group(pgy_cat) carm
+restore
+
+
+
+
+
+
 
 //Regressions
 
@@ -81,14 +114,14 @@ estimates store im_pgy_cat_reg
 
 //Visualizations 
 
- //Specialty - count and proportion
+ //PGY Category - count and proportion
 catplot answer_correct, over(pgy_cat) ///
  stack ///
  asyvars ///
  var1opts(label(angle(45))) ///
  recast(hbar) ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
- legend(pos(2) ring(0) rows(1) size(small) title("Answer", size(small)) symplacement(center))  ///
+ legend(pos(2) ring(0) rows(1) size(med) title("Answer", size(med)) symplacement(center))  ///
  xsize(8) ysize(5)
 graph export "Results and Figures/$S_DATE/PGY Count.png", as(png) name("Graph") replace
 
@@ -100,21 +133,21 @@ catplot answer_correct, over(pgy_cat) ///
  blabel(count, position(center) color(black)) ///
  recast(hbar) ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
- legend(pos(6) rows(1) size(small) title("Accuracy", size(small)) symplacement(center))  ///
+ legend(pos(6) rows(1) size(med) title("Accuracy", size(med)) symplacement(center))  ///
  xsize(8) ysize(5)
 graph export "Results and Figures/$S_DATE/PGY Proportion.png", as(png) name("Graph") replace
 
- 
+
  //Specialty - count and proportion
 catplot answer_correct, over(specialty) ///
  stack ///
  asyvars ///
  ytitle("Count") ///
- blabel(bar, angle(45)) /// 
+ blabel(bar, angle(45) size(med)) /// 
  recast(bar) ///
  b1title("Specialty") ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
- legend(pos(6) rows(1) size(small) title("Accuracy", size(small)) symplacement(center))  ///
+ legend(pos(2) rows(1) ring(0) size(med) title("Accuracy", size(med)) symplacement(center))  ///
  xsize(8) ysize(5)
 graph export "Results and Figures/$S_DATE/Specialty Count.png", as(png) name("Graph") replace
  
@@ -174,15 +207,4 @@ coefplot im_pgy_cat_reg, baselevels drop(_cons) eform xscale(log) ///
  text(3.5 0.5 "More likely" "incorrect" 3.5 8 "More likely" "correct", size(small) color(gs9))
 graph export "Results and Figures/$S_DATE/IM Only Regression Coefs by PGY.png", as(png) name("Graph") replace
 
-//TODO: p value for trend?
 
-
-//Spearman rank test; nptrend
-preserve 
-drop if pgy_cat == 1	//laypeople
-drop if pgy_cat == 3	//PA
-nptrend answer_correct, group(pgy_cat) carm
-restore
-
-
-nptrend answer_correct, group(trainee_status_cat) carm
