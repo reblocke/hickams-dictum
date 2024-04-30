@@ -25,7 +25,7 @@ set scheme cleanplots
 graph set window fontface "Helvetica"
 log using temp.log, replace
 
-import excel "Data_Multiple_diagnoses_final.xlsx", sheet("Sheet") firstrow
+import excel "Survey_Responses.xlsx", sheet("Sheet") firstrow
 
 // Data cleaning
 
@@ -46,8 +46,8 @@ label values pgy_cat pgy_cat_lab
 label variable pgy_cat "Training"
 
 recode answer (1 = 0) (2 = 0) (3 = 0) (4 = 1), generate(answer_correct)
-label variable answer_correct "Correct Responses"
-label define binary_lab 0 "Incorrect" 1 "Correct"
+label variable answer_correct "Intended Response"
+label define binary_lab 0 "Vignettes 1, 2, or 3" 1 "Vignette 4"
 label values answer_correct binary_lab
 
 label define pgy_groupings 0 "Pre" 1 "PGY 0-5" 2 "PGY 6+"
@@ -88,12 +88,9 @@ nptrend answer_correct, group(pgy_cat) carm
 restore
 
 
-
-
-
-
-
 //Regressions
+
+proportion answer_correct
 
 //Trainee year
 logistic answer_correct ib5.pgy_cat, or base
@@ -115,13 +112,15 @@ estimates store im_pgy_cat_reg
 //Visualizations 
 
  //PGY Category - count and proportion
+ //Used as figure 1 in the manuscript.
 catplot answer_correct, over(pgy_cat) ///
  stack ///
  asyvars ///
  var1opts(label(angle(45))) ///
  recast(hbar) ///
+ ytitle("Number of Responses") ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
- legend(pos(2) ring(0) rows(1) size(med) title("Answer", size(med)) symplacement(center))  ///
+ legend(pos(2) ring(0) rows(2) size(med) symplacement(center) title("Least Likely Vignette"))  ///
  xsize(8) ysize(5)
 graph export "Results and Figures/$S_DATE/PGY Count.png", as(png) name("Graph") replace
 
@@ -136,7 +135,6 @@ catplot answer_correct, over(pgy_cat) ///
  legend(pos(6) rows(1) size(med) title("Accuracy", size(med)) symplacement(center))  ///
  xsize(8) ysize(5)
 graph export "Results and Figures/$S_DATE/PGY Proportion.png", as(png) name("Graph") replace
-
 
  //Specialty - count and proportion
 catplot answer_correct, over(specialty) ///
