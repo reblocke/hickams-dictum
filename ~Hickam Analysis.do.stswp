@@ -6,8 +6,8 @@ capture log close
 * Data processing
 clear
 
-//cd "C:\Users\reblo\Box\Residency Personal Files\Scholarly Work\Locke Research Projects\Hickams Dictum Paper\Data" //PC version
-cd "/Users/blocke/Box Sync/Residency Personal Files/Scholarly Work/Locke Research Projects/Hickams Dictum Paper/Data" //Mac version
+cd "C:\Users\reblo\Box\Residency Personal Files\Scholarly Work\Locke Research Projects\Hickams Dictum Paper\Data" //PC version
+//cd "/Users/blocke/Box Sync/Residency Personal Files/Scholarly Work/Locke Research Projects/Hickams Dictum Paper/Data" //Mac version
 
 program define datetime 
 end
@@ -24,6 +24,37 @@ copy "`b'" "Results and Figures/$S_DATE/Logs/(`a1'_`a2'_`a3')`b'"
 set scheme cleanplots
 graph set window fontface "Helvetica"
 log using temp.log, replace
+
+
+/* --------------
+Manually analyzed results from the review of Hickam Cases
+Visualization not currently used
+---------------*/
+
+clear
+set obs 84
+generate answer = . //manually simulate the observed answers
+replace answer = 1 in 1/22
+replace answer = 2 in 23/46
+replace answer = 3 in 47/81
+replace answer = 4 in 82/84
+label variable answer "Answer"
+label define answer_lab 1 "Incidentaloma" 2 "Pre-existing" 3 "Causally-Related" 4 "Coincident/Unrelated/Symptomatic"
+label values answer answer_lab
+
+graph pie, angle(110) over(answer) ///
+	pie(1,color(erose%50)) pie(2,color(erose%65)) ///
+	pie(3,color(erose%80)) pie(4, explode color(ebg%90)) ///
+	plabel(_all percent, format(%2.0f) gap(-5) size(medium)) ///
+	plabel(_all name, gap((5)) textsize(large)) ///  
+	line(lcolor(white) lwidth(medium)) ///
+	legend(off) xsize(7) ysize(7)
+graph export "Results and Figures/$S_DATE/Cases Pie.png", as(png) name("Graph") replace
+clear
+
+/* --------------
+Analysis of Survey Results
+---------------*/
 
 import excel "Survey_Responses.xlsx", sheet("Sheet") firstrow
 
@@ -61,76 +92,86 @@ label variable trainee_status_cat "Trainee Status"
 label values trainee_status_cat pgy_groupings
 
 
-// Summarization
+/*
+Summarization
+*/
+
+//Marginal responses 
+proportion answer
+proportion answer_correct //dichotomized
 
 //by exposure
 table1_mc, by(pgy_cat) ///
 	vars( ///
+	answer cat %4.1f \ ///
 	answer_correct bin %4.1f \ ///
 	specialty cat %4.1f \ ///
 	) ///
-percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol total(before) saving("Results and Figures/$S_DATE/Correct by Training.xlsx", replace)
+percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol total(before) saving("Results and Figures/$S_DATE/Answers by Training.xlsx", replace)
 
 //by outcome: 
+/* Table 2 in Manuscript */
 table1_mc, by(answer_correct) ///
 	vars( ///
 	pgy_cat cat %4.1f \ ///
 	specialty cat %4.1f \ ///
 	) ///
-percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol catrowperc statistic saving("Results and Figures/$S_DATE/training and specialty by correct.xlsx", replace)
+percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol catrowperc statistic saving("Results and Figures/$S_DATE/Table 2 - training and specialty by correct.xlsx", replace)
 
-// P-value for trend
+table1_mc, by(answer) ///   //not dichotomized
+	vars( ///
+	pgy_cat cat %4.1f \ ///
+	specialty cat %4.1f \ ///
+	) ///
+percent_n percsign("%") iqrmiddle(",") sdleft(" (±") sdright(")") missing onecol catrowperc statistic saving("Results and Figures/$S_DATE/training and specialty by answer.xlsx", replace)
+
+
+// Cochrane Armitage test for trend; dichotomized 
 nptrend answer_correct, group(pgy_cat) carm
 nptrend answer_correct, group(trainee_status_cat) carm
+//Note: Chi2 (not testing for trend) reported in tables above
 
-
-//Cochrane Armitage test for trend; nptrend
+//Cochrane Armitage test for trend among only MD and MD trainees; dichotomized 
 preserve 
 drop if pgy_cat == 1	//laypeople
 drop if pgy_cat == 3	//PA
 nptrend answer_correct, group(pgy_cat) carm
 restore
 
-
-//Regressions
-
-proportion answer_correct
-
-//Trainee year
+/*
+Regressions
+*/
+// By Trainee year
 logistic answer_correct ib5.pgy_cat, or base
 estimates store pgy_cat_reg
+mlogit answer ib5.pgy_cat, base(4) rrr //non-dichotomized estimates
 
-//Specialty
+// By Specialty
 logistic answer_correct ib1.specialty, or base
 estimates store spec_reg
+mlogit answer ib1.specialty, base(4) rrr //non-dichotomized estimates
 
 //Account for both trainee year and specialty
 logistic answer_correct ib1.specialty ib5.pgy_cat, or base
 estimates store both_reg
-
+/* Assess how well knowing specialty and training allows you to descriminate correct vs not */ 
 predict model_pr , pr  //on entire sample
-* Run the pmcalplot command
 pmcalplot model_pr answer_correct
+bootstrap r(cstat), reps(50) size(255) seed(999) : pmcalplot model_pr answer_correct
 
-* List all stored scalars
-return list
-
-
-bootstrap r(cstat), reps(100) size(255) seed(999) : pmcalplot model_pr answer_correct
-
+mlogit answer ib1.specialty ib5.pgy_cat, base(4) rrr //non-dichotomized estimates
 
 //Just internal medicine
 logistic answer_correct ib5.pgy_cat if specialty < 3, or base
 estimates store im_pgy_cat_reg
+mlogit answer ib1.specialty ib5.pgy_cat if specialty < 3, base(4) rrr //non-dichotomized estimates
 
+/*
+Visualizations 
+*/
 
-//Visualizations 
-
-
- // Overall pychart
-* Example dataset
-
-* Generate the pie chart with specified options
+// Frequency of Answers
+/* Figure 1 in Manuscript */ 
 graph pie, over(answer) ///
 	pie(1,color(erose%50)) pie(2,color(erose%65)) ///
 	pie(3,color(erose%80)) pie(4, explode color(ebg%90)) ///
@@ -138,11 +179,9 @@ graph pie, over(answer) ///
 	plabel(_all name, gap(21.5) size(medlarge)) ///
 	line(lcolor(white) lwidth(medium)) ///
 	legend(off) xsize(7) ysize(7)
-graph export "Results and Figures/$S_DATE/Overall Pie.png", as(png) name("Graph") replace
-	
-	
+graph export "Results and Figures/$S_DATE/Fig 1 - Overall Pie.png", as(png) name("Graph") replace
+		
  //PGY Category - count and proportion
- //Used as figure 1 in the manuscript.
 catplot answer_correct, over(pgy_cat) ///
  stack ///
  asyvars ///
@@ -154,6 +193,22 @@ catplot answer_correct, over(pgy_cat) ///
  xsize(8) ysize(5)
 graph export "Results and Figures/$S_DATE/PGY Count.png", as(png) name("Graph") replace
 
+/* Figure 2 in Revised Manuscript */ 
+preserve 
+label variable answer " "  //hack to eliminate the extra label 
+catplot answer, over(pgy_cat) ///
+ stack ///
+ asyvars ///
+ var1opts(label(angle(45))) ///
+ recast(hbar) ///
+ ytitle("Number of Responses") ///
+ bar(1, color(erose%50)) bar(2, color(erose%65)) bar(3, color(erose%80)) bar(4, color(ebg%90)) ///
+ legend(pos(2) ring(0) rows(4) size(med) symplacement(center) title("Least Likely Vignette"))  ///
+ xsize(8) ysize(5)
+graph export "Results and Figures/$S_DATE/Fig 2 - PGY Count all answers.png", as(png) name("Graph") replace
+restore
+
+//Proportional Versions 
 catplot answer_correct, over(pgy_cat) ///
  stack ///
  asyvars ///
@@ -164,7 +219,19 @@ catplot answer_correct, over(pgy_cat) ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
  legend(pos(6) rows(1) size(med) title("Accuracy", size(med)) symplacement(center))  ///
  xsize(8) ysize(5)
-graph export "Results and Figures/$S_DATE/PGY Proportion.png", as(png) name("Graph") replace
+graph export "Results and Figures/$S_DATE/Correct - PGY Proportion.png", as(png) name("Graph") replace
+
+catplot answer, over(pgy_cat) ///
+ stack ///
+ asyvars ///
+ percent(pgy_cat) ///
+ ytitle("Proportion") /// 
+ blabel(count, position(center) color(black)) ///
+ recast(hbar) ///
+ bar(1, color(erose%50)) bar(2, color(erose%65)) bar(3, color(erose%80)) bar(4, color(ebg%90)) ///
+ legend(pos(6) rows(1) size(med) title("Accuracy", size(med)) symplacement(center))  ///
+ xsize(8) ysize(5)
+graph export "Results and Figures/$S_DATE/Answers - PGY Proportion.png", as(png) name("Graph") replace
 
  //Specialty - count and proportion
 catplot answer_correct, over(specialty) ///
@@ -175,10 +242,21 @@ catplot answer_correct, over(specialty) ///
  recast(bar) ///
  b1title("Specialty") ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
- legend(pos(2) rows(1) ring(0) size(med) title("Accuracy", size(med)) symplacement(center))  ///
+ legend(pos(2) rows(1) ring(0) size(med) title("Answer", size(med)) symplacement(center))  ///
  xsize(8) ysize(5)
-graph export "Results and Figures/$S_DATE/Specialty Count.png", as(png) name("Graph") replace
+graph export "Results and Figures/$S_DATE/Correct Specialty Count.png", as(png) name("Graph") replace
  
+catplot answer, over(specialty) ///
+ stack ///
+ asyvars ///
+ ytitle("Count") ///
+ recast(bar) ///
+ b1title("Specialty") ///
+ bar(1, color(erose%50)) bar(2, color(erose%65)) bar(3, color(erose%80)) bar(4, color(ebg%90)) ///
+ legend(pos(2) rows(1) ring(0) size(med) title("Answer", size(med)) symplacement(center))  ///
+ xsize(8) ysize(5)
+graph export "Results and Figures/$S_DATE/Answer Specialty Count.png", as(png) name("Graph") replace
+  
 catplot answer_correct, over(specialty) ///
  stack ///
  asyvars ///
@@ -188,9 +266,21 @@ catplot answer_correct, over(specialty) ///
  recast(bar) ///
  b1title("Specialty") ///
  bar(1, color(gs4)) bar(2, color(gs12)) ///
- legend(pos(6) rows(1) size(small) title("Accuracy", size(small)) symplacement(center))  ///
+ legend(pos(6) rows(1) size(small) title("Answer", size(small)) symplacement(center))  ///
  xsize(8) ysize(5) 
-graph export "Results and Figures/$S_DATE/Specialty Proportion.png", as(png) name("Graph") replace
+graph export "Results and Figures/$S_DATE/Correct Specialty Proportion.png", as(png) name("Graph") replace
+ 
+catplot answer, over(specialty) ///
+ stack ///
+ asyvars ///
+ percent(specialty) ///
+ ytitle("Proportion") ///
+ recast(bar) ///
+ b1title("Specialty") ///
+ bar(1, color(erose%50)) bar(2, color(erose%65)) bar(3, color(erose%80)) bar(4, color(ebg%90)) ///
+ legend(pos(6) rows(1) size(small) title("Answer", size(small)) symplacement(center))  ///
+ xsize(8) ysize(5) 
+graph export "Results and Figures/$S_DATE/Answer Specialty Proportion.png", as(png) name("Graph") replace
  
 //Regression plots: 
 
@@ -198,68 +288,44 @@ graph export "Results and Figures/$S_DATE/Specialty Proportion.png", as(png) nam
 coefplot pgy_cat_reg, baselevels drop(_cons) eform xscale(log) ///
  xline(1) ///
  xlabel(0.125 0.25 0.5 1 2 4 8 16 32) ///
- xscale(extend) xtitle("Odds Ratio of Correct Answer" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
+ xscale(extend) xtitle("Odds Ratio of Selecting Answer 4" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
  mlabel(string(@b,"%9.2f") + " [ " + string(@ll,"%9.2f") + " - " + string(@ul,"%9.2f") + " ] " + cond(@pval<.001, "***", cond(@pval<.01, "**", cond(@pval<.05, "*", "")))) mlabsize(medsmall) mlabposition(12) mlabgap(*1) ///
  scheme(white_tableau) ///
- text(3 0.11 "More likely" "incorrect" 3 9.9 "More likely" "correct", size(small) color(gs9))
+ text(3 0.175 "More likely" "1, 2, or 3" 3 9.9 "More likely" "4", size(small) color(gs9))
 graph export "Results and Figures/$S_DATE/Fig 1 - By Cat.png", as(png) name("Graph") replace
 
 //Specialty
 coefplot spec_reg, baselevels drop(_cons) eform xscale(log) ///
  xline(1) ///
  xlabel( 1 2 4 8 16 32) ///
- xscale(extend) xtitle("Odds Ratio of Correct Answer" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
+ xscale(extend) xtitle("Odds Ratio of Selecting Answer 4" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
  mlabel(string(@b,"%9.2f") + " [ " + string(@ll,"%9.2f") + " - " + string(@ul,"%9.2f") + " ] " + cond(@pval<.001, "***", cond(@pval<.01, "**", cond(@pval<.05, "*", "")))) mlabsize(medsmall) mlabposition(12) mlabgap(*1) ///
  scheme(white_tableau) ///
- text(3.5 0.5 "More likely" "incorrect" 3.5 8 "More likely" "correct", size(small) color(gs9))
+ text(3.5 0.5 "More likely" "1, 2, or 3" 3.5 8 "More likely" "4", size(small) color(gs9))
 graph export "Results and Figures/$S_DATE/Fig 1 - By Cat.png", as(png) name("Graph") replace
 
 //both 
 coefplot both_reg, baselevels drop(_cons) eform xscale(log) ///
  xline(1) ///
  xlabel(0.125 0.25 0.5 1 2 4 8 16 32) ///
- xscale(extend) xtitle("Odds Ratio of Correct Answer" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
+ xscale(extend) xtitle("Odds Ratio of Selecting Answer 4" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
  mlabel(string(@b,"%9.2f") + " [ " + string(@ll,"%9.2f") + " - " + string(@ul,"%9.2f") + " ] " + cond(@pval<.001, "***", cond(@pval<.01, "**", cond(@pval<.05, "*", "")))) mlabsize(medsmall) mlabposition(12) mlabgap(*1) ///
  scheme(white_tableau) ///
- text(3.5 0.25 "More likely" "incorrect" 3.5 16 "More likely" "correct", size(small) color(gs9))
+ text(3.5 0.25 "More likely" "1, 2, or 3" 3.5 16 "More likely" "4", size(small) color(gs9))
 graph export "Results and Figures/$S_DATE/Regression Coeffs by PGY and Spec.png", as(png) name("Graph") replace
 
-//just IM
+//just IM. Note - intern's excluded because there was no variation in answer (all correct)
 coefplot im_pgy_cat_reg, baselevels drop(_cons) eform xscale(log) ///
  title("Among internists only") ///
  xline(1) ///
  xlabel(0.125 0.25 0.5 1 2 4 8 16 32) ///
- xscale(extend) xtitle("Odds Ratio of Correct Answer" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
+ xscale(extend) xtitle("Odds Ratio of Selecting Answer 4" , size(small)) yscale(extend) ciopts(recast(rcap) lwidth(thick)) ///
  mlabel(string(@b,"%9.2f") + " [ " + string(@ll,"%9.2f") + " - " + string(@ul,"%9.2f") + " ] " + cond(@pval<.001, "***", cond(@pval<.01, "**", cond(@pval<.05, "*", "")))) mlabsize(medsmall) mlabposition(12) mlabgap(*1) ///
  scheme(white_tableau) ///
- text(3.5 0.5 "More likely" "incorrect" 3.5 8 "More likely" "correct", size(small) color(gs9))
+ text(3.5 0.5 "More likely" "1, 2, or 3" 3.5 8 "More likely" "4", size(small) color(gs9))
 graph export "Results and Figures/$S_DATE/IM Only Regression Coefs by PGY.png", as(png) name("Graph") replace
 
 
 
 
-clear
-set obs 84
-
-* Create the variable 'answer'
-generate answer = .
-replace answer = 1 in 1/22
-replace answer = 2 in 23/46
-replace answer = 3 in 47/81
-replace answer = 4 in 82/84
-
-
-label variable answer "Answer"
-label define answer_lab 1 "Incidentaloma" 2 "Pre-existing" 3 "Causally-Related" 4 "Coincident, Unrelated, Symptomatic"
-label values answer answer_lab
-
-
-graph pie, over(answer) ///
-	pie(1,color(erose%50)) pie(2,color(erose%65)) ///
-	pie(3,color(erose%80)) pie(4, explode color(ebg%90)) ///
-	plabel(_all percent, format(%2.0f) gap(5) size(large)) ///
-	plabel(_all name, gap(15) textsize(small)) ///
-	line(lcolor(white) lwidth(medium)) ///
-	legend(off) xsize(7) ysize(7)
-graph export "Results and Figures/$S_DATE/Overall Pie.png", as(png) name("Graph") replace
 	
