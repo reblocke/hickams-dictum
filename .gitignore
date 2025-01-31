@@ -1,3 +1,4 @@
 Results and Figures/*
 *.log
 *.doc*
+.DS_Store
