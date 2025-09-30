@@ -1,4 +1,4 @@
-# Hickam’s Dictum — Reproduction Package
+# Hickam’s Dictum — Code and Supporgin Data
 
 > Code and data to reproduce the main analyses and figures in **“Hickam’s Dictum: An Analysis of Multiple Diagnoses”** (Journal of General Internal Medicine, published October 28, 2024; DOI: 10.1007/s11606-024-09120-y).
 
@@ -91,9 +91,6 @@ No protected health information is included in this repository. See the paper fo
 ├── Results and Figures/              # (created by the do-file on run)
 └── README.md, CITATION.cff, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, LICENSE
 ```
-
-## Releasing and archiving
-For a citable snapshot, create a GitHub Release and enable Zenodo archiving, which will mint a DOI for the exact code state that matches the paper. Add the release DOI to this README and to `CITATION.cff`.
 
 ## Funding, conflicts, and contact
 
