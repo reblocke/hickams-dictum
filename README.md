@@ -106,3 +106,50 @@ No protected health information is included in this repository. See the paper fo
 
 ---
 **Provenance.** The paper is open access under CC BY 4.0; it states that raw data and Stata 18 code are available in this repository and that the IRB exempted the anonymous survey. The do-file documents which tables/figures are exported and where.
+
+## LLM and Repository Readiness Notes
+
+### Description
+Hickam's Dictum: An Analysis of Multiple Diagnoses
+
+### Instructions
+Start with this README, then inspect the files listed under Repository Layout. For computational workflows, run commands from the repository root and avoid committing generated outputs unless a release explicitly calls for them.
+
+### Authors, Funding, and Acknowledgments
+Maintainer: Brian W. Locke (`@reblocke`, ORCID 0000-0002-3588-5238). Preserve any project-specific author, funding, and acknowledgment details already listed elsewhere in the repository or accompanying publication.
+
+### Repository Layout
+- `.DS_Store`
+- `CITATION.cff`
+- `CODE_OF_CONDUCT.md`
+- `CONTRIBUTING.md`
+- `Hickam Analysis.do`
+- `LICENSE`
+- `Makefile`
+- `NEJM Cases.xlsx`
+- `Published Case Reviews.xlsx`
+- `README.md`
+- `SECURITY.md`
+- `Survey_Responses.xlsx`
+- `~Hickam Analysis [Recovered].do.stswp`
+
+### Data and Codebook
+Check for synthetic/de-identified data status before broad reuse
+
+### Workflow / Script Order
+stata-mp -b do "Hickam Analysis.do"
+
+### Dependencies / Environment
+Stata and repo README
+
+### Citation
+Preferred scholarly citation: https://doi.org/10.1007/s11606-024-09120-y. Cite this repository with the GitHub URL and the commit or release used.
+
+### License
+Repository license status: MIT. See the root license file when present. Third-party and publisher materials remain under their original terms.
+
+### Manuscript Status
+No public manuscript Markdown audited yet; use DOI pending accepted-version check Publisher text not copied; code/data license present
+
+### Contact
+Maintainer: Brian W. Locke (`@reblocke`). Use GitHub issues or pull requests for repository-specific questions when the repository is public.
