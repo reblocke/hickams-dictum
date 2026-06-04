@@ -1,29 +1,40 @@
-// Survey Data 
-// Hickams Project
+// Survey Data
+// Hickam's Dictum project
 
+version 18.0
 capture log close
 
 * Data processing
-clear
+clear all
 
-cd "C:\Users\reblo\Box\Residency Personal Files\Scholarly Work\Locke Research Projects\Hickams Dictum Paper\Data" //PC version
-//cd "/Users/blocke/Box Sync/Residency Personal Files/Scholarly Work/Locke Research Projects/Hickams Dictum Paper/Data" //Mac version
+foreach required_file in "Survey_Responses.xlsx" "NEJM Cases.xlsx" "Published Case Reviews.xlsx" {
+	capture confirm file "`required_file'"
+	if _rc {
+		display as error "Required input file not found: `required_file'"
+		display as error "Run this do-file from the repository root."
+		exit 601
+	}
+}
 
-program define datetime 
+capture program drop datetime
+program define datetime
 end
 
-capture mkdir "Results and Figures"
-capture mkdir "Results and Figures/$S_DATE/" //make new folder for figure output if needed
-capture mkdir "Results and Figures/$S_DATE/Logs/" //new folder for stata logs
+local results_root "Results and Figures"
+local run_dir "`results_root'/$S_DATE"
+local logs_dir "`run_dir'/Logs"
+capture mkdir "`results_root'"
+capture mkdir "`run_dir'"
+capture mkdir "`logs_dir'"
 local a1=substr(c(current_time),1,2)
 local a2=substr(c(current_time),4,2)
 local a3=substr(c(current_time),7,2)
 local b = "Hickam Analysis.do" // do file name
-copy "`b'" "Results and Figures/$S_DATE/Logs/(`a1'_`a2'_`a3')`b'"
+copy "`b'" "`logs_dir'/(`a1'_`a2'_`a3')`b'", replace
 
 set scheme cleanplots
 graph set window fontface "Helvetica"
-log using temp.log, replace
+log using "`logs_dir'/(`a1'_`a2'_`a3')Hickam Analysis.log", replace
 
 
 /* --------------
@@ -325,7 +336,4 @@ coefplot im_pgy_cat_reg, baselevels drop(_cons) eform xscale(log) ///
  text(3.5 0.5 "More likely" "1, 2, or 3" 3.5 8 "More likely" "4", size(small) color(gs9))
 graph export "Results and Figures/$S_DATE/IM Only Regression Coefs by PGY.png", as(png) name("Graph") replace
 
-
-
-
-	
+log close

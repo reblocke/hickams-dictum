@@ -1,29 +1,46 @@
 # AGENTS
 
 ## Project Purpose
-Hickam's Dictum: An Analysis of Multiple Diagnoses
+
+This public repository contains Stata 18 analysis code and supporting tabular data for "Hickam's Dictum: An Analysis of Multiple Diagnoses" (Journal of General Internal Medicine, published online October 28, 2024; DOI: 10.1007/s11606-024-09120-y; PMID: 39467949).
 
 ## Public and Data-Safety Rules
-- Treat this repository as public. Do not add PHI, restricted datasets, credentials, private drafts, or publisher-formatted article text.
-- Check for synthetic/de-identified data status before broad reuse
-- Manuscript status: No public manuscript Markdown audited yet; use DOI pending accepted-version check
+
+- Treat the repository as public research code.
+- Do not add PHI, credentials, private drafts, reviewer correspondence, or publisher-formatted article PDFs.
+- The committed workbooks are intended public/anonymized source data for the article. Do not merge in respondent identifiers or non-public clinical data.
+- Do not copy long passages from the published article into Markdown. Use DOI/PubMed links and short paraphrased summaries instead.
+- Generated outputs belong under `Results and Figures/` and are ignored unless intentionally archived in a release.
 
 ## How to Orient Quickly
-- Start with `README.md` for project scope, workflow, data notes, citation, and license information.
-- Use `CITATION.cff` for structured citation metadata when present.
-- Inspect scripts/notebooks before running them; do not assume generated outputs are current.
+
+1. Read `README.md` for the article context, dependencies, run command, and file inventory.
+2. Read `llms.txt` for the compact machine-readable index.
+3. Use `CITATION.cff` for structured citation metadata.
+4. Use `data_dictionary.md` or `data_dictionary.csv` before interpreting workbook columns.
+5. Inspect `Hickam Analysis.do` before running it; the do-file should be launched from the repository root.
 
 ## Workflow
-From the repository root, use this as the initial run guidance:
+
+Install the required Stata packages listed in `README.md`, then run:
+
+```bash
+make run
+```
+
+or directly:
 
 ```bash
 stata-mp -b do "Hickam Analysis.do"
 ```
 
-If the command is a placeholder, refine it after reading the local scripts and existing README.
+Set `STATA=stata-se` or another executable name when using `make` on systems without `stata-mp`.
 
 ## Verification Before Publishing Changes
+
 - Run `git diff --check`.
 - Validate `CITATION.cff` as YAML after citation edits.
-- Do not commit generated outputs, logs, caches, virtual environments, `.DS_Store`, or checkpoint files unless intentionally released.
-- For clinical or collaborator data, confirm that no row-level restricted data or identifiers are included.
+- Confirm `llms.txt`, `README.md`, `AGENTS.md`, and the data dictionary agree on DOI, PMID, file names, and run command.
+- Run `make -n run` at minimum.
+- If Stata is available, run the do-file in batch mode and inspect the generated log under `Results and Figures/<date>/Logs/`.
+- Do not commit `.DS_Store`, Stata swap/recovery files, logs, generated figures/tables, or local manuscript drafts.

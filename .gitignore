@@ -1,6 +1,20 @@
-Results and Figures/*
+# Generated analysis outputs
+Results and Figures/
 *.log
-*.doc*
+*.smcl
+*.gph
+
+# Stata editor and recovery files
+*.stswp
+*.sttmp
+~*.do.stswp
+~*.do
+
+# Local OS/editor artifacts
 .DS_Store
-.DS_Store
-.DS_Store
+Thumbs.db
+*.tmp
+
+# Manuscript drafts or local working documents are not part of this code repo.
+*.doc
+*.docx

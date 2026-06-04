@@ -1,0 +1,41 @@
+# reblocke/hickams-dictum
+
+Purpose: Stata 18 analysis code and supporting tabular data for "Hickam's Dictum: An Analysis of Multiple Diagnoses."
+
+Canonical article:
+- DOI: https://doi.org/10.1007/s11606-024-09120-y
+- PubMed: https://pubmed.ncbi.nlm.nih.gov/39467949/
+- Journal page: https://link.springer.com/article/10.1007/s11606-024-09120-y
+
+Repository:
+- GitHub: https://github.com/reblocke/hickams-dictum
+- Citation metadata: CITATION.cff
+- Human README: README.md
+- Agent instructions: AGENTS.md
+- Data dictionary: data_dictionary.md and data_dictionary.csv
+
+What is here:
+- Hickam Analysis.do: main Stata analysis script.
+- Survey_Responses.xlsx: anonymous provider survey export used for the main survey analyses.
+- NEJM Cases.xlsx: tabulated NEJM diagnostic teaching cases.
+- Published Case Reviews.xlsx: tabulated published case reports and coding notes.
+- Makefile: convenience wrapper for running the Stata do-file.
+
+How to run:
+- Install Stata 18 and the user-written packages listed in README.md.
+- From the repository root, run: make run
+- Direct Stata command: stata-mp -b do "Hickam Analysis.do"
+- Generated tables, figures, and logs are written under Results and Figures/<Stata date>/.
+
+Data and reuse notes:
+- The committed workbooks are intended public/anonymized source data for the article.
+- Do not add PHI, private respondent data, credentials, or unpublished manuscript drafts.
+- Survey platform administrative fields are dropped by the Stata analysis before modeling.
+- Interpret workbook columns with data_dictionary.md or data_dictionary.csv.
+- Code is MIT licensed. Author-created text, figures, tables, and data notes are CC BY 4.0 unless otherwise noted.
+- Third-party links, publisher pages, and source articles remain under their original terms.
+
+Machine-reader cautions:
+- Do not infer that generated outputs in a local working tree are current unless they were produced by the current commit.
+- Do not copy long publisher article text into derived documentation; cite DOI/PubMed and summarize briefly.
+- The do-file is intended to run from the repository root and will fail early if required workbooks are missing.

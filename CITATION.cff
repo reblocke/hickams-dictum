@@ -1,10 +1,12 @@
 cff-version: 1.2.0
-message: "If you use this repository, please cite the article and this software release."
-title: "hickams-dictum: research code for 'Hickam’s Dictum: An Analysis of Multiple Diagnoses'"
-version: "paper-repro-1.0.0"
-date-released: "2025-09-30"
+message: "If you use this repository, please cite the article and the repository commit or release used."
+title: "hickams-dictum: Stata analysis code and supporting data for Hickam's Dictum"
+version: "paper-repro-1.1.0"
+date-released: "2026-06-03"
+abstract: "Stata 18 analysis code and supporting tabular data for a Journal of General Internal Medicine study of Hickam's dictum, Ockham's razor, and multiple diagnoses."
 repository-code: "https://github.com/reblocke/hickams-dictum"
 url: "https://github.com/reblocke/hickams-dictum"
+license: MIT
 authors:
   - family-names: Aberegg
     given-names: Scott K.
@@ -17,9 +19,15 @@ keywords:
   - Stata
   - diagnostic reasoning
   - Hickam's dictum
+  - Ockham's razor
+  - medical education
+identifiers:
+  - type: doi
+    value: "10.1007/s11606-024-09120-y"
+    description: "Preferred article citation DOI"
 preferred-citation:
   type: article
-  title: "Hickam’s Dictum: An Analysis of Multiple Diagnoses"
+  title: "Hickam's Dictum: An Analysis of Multiple Diagnoses"
   authors:
     - family-names: Aberegg
       given-names: Scott K.
@@ -28,6 +36,7 @@ preferred-citation:
     - family-names: Locke
       given-names: Brian W.
   year: 2024
+  date-published: "2024-10-28"
   doi: "10.1007/s11606-024-09120-y"
   journal: "Journal of General Internal Medicine"
   url: "https://doi.org/10.1007/s11606-024-09120-y"
