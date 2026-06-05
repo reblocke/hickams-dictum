@@ -1,31 +1,42 @@
-# Hickam’s Dictum — Code and Supporgin Data
+# Hickam's Dictum: Analysis Code and Supporting Data
 
-> Code and data to reproduce the main analyses and figures in **“Hickam’s Dictum: An Analysis of Multiple Diagnoses”** (Journal of General Internal Medicine, published October 28, 2024; DOI: 10.1007/s11606-024-09120-y).
+[![DOI](https://img.shields.io/badge/DOI-10.1007%2Fs11606--024--09120--y-blue)](https://doi.org/10.1007/s11606-024-09120-y)
+[![PMID](https://img.shields.io/badge/PMID-39467949-blue)](https://pubmed.ncbi.nlm.nih.gov/39467949/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Links & IDs**
-- Article (open access): https://doi.org/10.1007/s11606-024-09120-y  
-- Repository: https://github.com/reblocke/hickams-dictum  
-- This README prepared against commit `3c8505c` (2025-04-28).  
-- Corresponding analysis environment: Stata 18.
+Code and supporting tabular data for **"Hickam's Dictum: An Analysis of Multiple Diagnoses"**, published in the *Journal of General Internal Medicine* on October 28, 2024.
 
-## Cite this work
-If you use this repository, please cite the article and (optionally) this software release. See `CITATION.cff` for machine‑readable metadata.
+## Description
 
-- Aberegg SK, Poole BR, Locke BW. *Hickam’s Dictum: An Analysis of Multiple Diagnoses*. **J Gen Intern Med**. 2024. doi:10.1007/s11606-024-09120-y.
+This repository reproduces the Stata analyses and exported displays for a study of multiple diagnoses, Hickam's dictum, and Ockham's razor. The paper combines three sources: a literature review of published case reports, a review of New England Journal of Medicine diagnostic teaching cases, and an anonymous online provider survey using four diagnostic vignettes.
 
-## Quick start (reproduce the main results)
+Canonical links:
 
-**Requirements**
-- Stata 18 (IC/SE/MP) on Windows, macOS, or Linux.
-- The three Excel files in the repo root:
-  - `Survey_Responses.xlsx`
-  - `NEJM Cases.xlsx`
-  - `Published Case Reviews.xlsx`
+- Article DOI: <https://doi.org/10.1007/s11606-024-09120-y>
+- PubMed: <https://pubmed.ncbi.nlm.nih.gov/39467949/>
+- Repository: <https://github.com/reblocke/hickams-dictum>
+- Machine-readable citation metadata: [CITATION.cff](CITATION.cff)
+- Machine-readable repository index: [llms.txt](llms.txt)
 
-**Install user-written Stata packages (first run only)**
-In Stata's Command window:
+## Quick Start
 
-```
+Run commands from the repository root. The do-file expects the three Excel workbooks to remain in the root directory.
+
+### Requirements
+
+| Component | Required version or source | Purpose |
+| --- | --- | --- |
+| Stata | 18 IC, SE, or MP | Main analysis workflow |
+| `table1_mc` | SSC | Descriptive tables |
+| `catplot` | SSC | Categorical plots |
+| `coefplot` | SSC | Regression coefficient plots |
+| `pmcalplot` | SSC | Calibration plot and bootstrap C statistic |
+| `cleanplots` | `net install cleanplots, from("https://tdmize.github.io/data")` | Plot scheme |
+| Excel workbooks | Repository root | Survey, NEJM case, and case-report source data |
+
+Install the Stata packages once:
+
+```stata
 ssc install table1_mc
 ssc install catplot
 ssc install coefplot
@@ -33,123 +44,109 @@ ssc install pmcalplot
 net install cleanplots, from("https://tdmize.github.io/data")
 ```
 
-**Run the analysis**
-- Option A (GUI): Open `Hickam Analysis.do` and `Do` the file.  
-- Option B (batch): From a shell in the repository directory, run one of the following depending on your Stata executable name:
+Run in batch mode with the Stata executable available on your system:
 
-```
-stata-mp -b do "Hickam Analysis.do"
+```bash
+make run
 # or
-stata-se -b do "Hickam Analysis.do"
-# or
-stata -b do "Hickam Analysis.do"
-```
-
-The script creates a dated folder `Results and Figures/<today>/` and writes figures, tables, and a log file. Some figures use the `cleanplots` graphics scheme.
-
-### Expected outputs
-The do-file writes (at minimum) the following, which correspond to the paper’s displays:
-
-**Figures**
-- `Results and Figures/<date>/Fig 1 - Overall Pie.png` — pie chart of vignette responses (paper Figure 1).
-- `Results and Figures/<date>/Fig 2 - PGY Count all answers.png` — responses by training level (paper Figure 2).
-- Additional exports (useful/supplementary):  
-  `PGY Count.png`, `Correct - PGY Proportion.png`, `Answers - PGY Proportion.png`,  
-  `Correct Specialty Count.png`, `Answer Specialty Count.png`,  
-  `Correct Specialty Proportion.png`, `Answer Specialty Proportion.png`,  
-  `Regression Coeffs by PGY and Spec.png`.
-
-**Tables**
-- `Results and Figures/<date>/Table 2 - training and specialty by correct.xlsx` — Table 2 in the manuscript (training and specialty by correct response).
-- `Results and Figures/<date>/Answers by Training.xlsx`
-- `Results and Figures/<date>/training and specialty by answer.xlsx`
-
-> Note: The do-file also contains a small “manually simulate observed answers” block used for an illustrative pie chart (`Cases Pie.png`). This is not needed for the main survey analyses.
-
-## Data access and ethics
-
-- **Survey:** Anonymous provider survey conducted in August 2023 via social media. Institutional review board (University of Utah) granted an exemption. The raw responses used in the paper are in `Survey_Responses.xlsx` at the repo root.
-- **NEJM case series:** Tabulation of *Case Records of the Massachusetts General Hospital* and *Clinical Problem‑Solving* articles, primarily from 2021–2023 with an earlier set from 2015–2018, summarized in `NEJM Cases.xlsx`.
-- **Case reports:** Tabulation of 83 published case reports concerning Hickam’s dictum or Ockham’s razor, summarized in `Published Case Reviews.xlsx`.
-
-No protected health information is included in this repository. See the paper for details and the appendices referenced there.
-
-## Computational environment
-
-- **Language:** Stata 18
-- **User-written packages:** `table1_mc`, `catplot`, `coefplot`, `pmcalplot`, `cleanplots` (see install commands above).
-- **OS/architecture tested:** Author‑provided code has been used on Windows and macOS; Stata 18 is cross‑platform.
-- **Randomness:** The analysis is deterministic; when bootstrap is used (for calibration plots), seeds are set in the do‑file.
-
-## Repository layout
-
-```
-├── Hickam Analysis.do                # main analysis script (Stata)
-├── Survey_Responses.xlsx             # survey data (anonymous)
-├── NEJM Cases.xlsx                   # tabulated NEJM cases
-├── Published Case Reviews.xlsx       # tabulated case reports
-├── Results and Figures/              # (created by the do-file on run)
-└── README.md, CITATION.cff, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, LICENSE
-```
-
-## Funding, conflicts, and contact
-
-- **Funding:** The authors report **no funding** for the study.
-- **Conflicts of interest:** One author (B.W.L.) advises and owns equity in Mountain Biometrics; the authors report no other conflicts.
-- **Maintainer / questions:** Please open a GitHub issue in this repository. (If you prefer email, use the corresponding author listed in the paper.)
-
-## Licenses
-
-- **Code:** MIT License (see `LICENSE`).  
-- **Text/figures/tables produced here:** CC BY 4.0, unless noted.  
-- **Data files:** Content created by the authors is CC BY 4.0; any third‑party copyrighted content remains under its original terms.
-
----
-**Provenance.** The paper is open access under CC BY 4.0; it states that raw data and Stata 18 code are available in this repository and that the IRB exempted the anonymous survey. The do-file documents which tables/figures are exported and where.
-
-## LLM and Repository Readiness Notes
-
-### Description
-Hickam's Dictum: An Analysis of Multiple Diagnoses
-
-### Instructions
-Start with this README, then inspect the files listed under Repository Layout. For computational workflows, run commands from the repository root and avoid committing generated outputs unless a release explicitly calls for them.
-
-### Authors, Funding, and Acknowledgments
-Maintainer: Brian W. Locke (`@reblocke`, ORCID 0000-0002-3588-5238). Preserve any project-specific author, funding, and acknowledgment details already listed elsewhere in the repository or accompanying publication.
-
-### Repository Layout
-- `.DS_Store`
-- `CITATION.cff`
-- `CODE_OF_CONDUCT.md`
-- `CONTRIBUTING.md`
-- `Hickam Analysis.do`
-- `LICENSE`
-- `Makefile`
-- `NEJM Cases.xlsx`
-- `Published Case Reviews.xlsx`
-- `README.md`
-- `SECURITY.md`
-- `Survey_Responses.xlsx`
-- `~Hickam Analysis [Recovered].do.stswp`
-
-### Data and Codebook
-Check for synthetic/de-identified data status before broad reuse
-
-### Workflow / Script Order
 stata-mp -b do "Hickam Analysis.do"
+```
 
-### Dependencies / Environment
-Stata and repo README
+Alternative executable names such as `stata-se` or `stata` also work if installed locally. The do-file now fails early with a clear message if the input workbooks are missing or if it is not launched from the repository root.
 
-### Citation
-Preferred scholarly citation: https://doi.org/10.1007/s11606-024-09120-y. Cite this repository with the GitHub URL and the commit or release used.
+## Workflow and Outputs
 
-### License
-Repository license status: MIT. See the root license file when present. Third-party and publisher materials remain under their original terms.
+The analysis is controlled by [Hickam Analysis.do](Hickam%20Analysis.do). It imports `Survey_Responses.xlsx`, cleans the survey variables used in the paper, runs descriptive summaries, trend tests, logistic and multinomial models, and exports figures/tables to a dated directory:
 
-### Manuscript Status
-No public manuscript Markdown audited yet; use DOI pending accepted-version check Publisher text not copied; code/data license present
+```text
+Results and Figures/<Stata date>/
+Results and Figures/<Stata date>/Logs/
+```
 
-### Contact
-Maintainer: Brian W. Locke (`@reblocke`). Use GitHub issues or pull requests for repository-specific questions when the repository is public.
+Expected exported outputs include:
+
+| Output | Role |
+| --- | --- |
+| `Fig 1 - Overall Pie.png` | Paper Figure 1, overall vignette response distribution |
+| `Fig 2 - PGY Count all answers.png` | Paper Figure 2, vignette responses by training level |
+| `Table 2 - training and specialty by correct.xlsx` | Paper Table 2 summary export |
+| `Answers by Training.xlsx` | Supporting survey response table |
+| `training and specialty by answer.xlsx` | Supporting response table by answer |
+| `Regression Coeffs by PGY and Spec.png` | Supporting adjusted regression plot |
+| `Logs/(HH_MM_SS)Hickam Analysis.log` | Batch run log |
+
+The do-file also creates `Cases Pie.png` from a small manually simulated count block used for illustration. That figure is not required for the main survey analyses.
+
+## Data and Codebook
+
+No protected health information is included. The survey was anonymous and the University of Utah IRB granted an exemption, as described in the article. Survey platform administrative fields are present in the raw export but are dropped by the analysis script before modeling.
+
+| File | Sheets | Description | Public reuse note |
+| --- | --- | --- | --- |
+| `Survey_Responses.xlsx` | `Sheet` | Anonymous provider responses to the multiple-diagnoses vignette survey | Use with the codebook; do not add identifiable respondent data |
+| `NEJM Cases.xlsx` | `2015-2018`, `2021-2023` | Tabulated NEJM Case Records and Clinical Problem-Solving cases | Links and diagnoses come from published teaching cases |
+| `Published Case Reviews.xlsx` | `All-reviewed`, `included-only`, `Sheet3` | Tabulated case reports and coding summaries for Hickam/Ockham cases | Article links and notes should be interpreted with the paper |
+
+Variable-level documentation is provided in:
+
+- Human-readable codebook: [data_dictionary.md](data_dictionary.md)
+- Machine-usable CSV codebook: [data_dictionary.csv](data_dictionary.csv)
+
+## File Inventory
+
+| Path | Type | Description |
+| --- | --- | --- |
+| `Hickam Analysis.do` | Stata script | Main analysis and figure/table export workflow |
+| `Makefile` | Command wrapper | Runs the do-file with `$(STATA) -b do` |
+| `Survey_Responses.xlsx` | Data | Anonymous survey export used for paper analyses |
+| `NEJM Cases.xlsx` | Data | NEJM didactic case review tabulation |
+| `Published Case Reviews.xlsx` | Data | Published case-report review tabulation |
+| `data_dictionary.md` | Documentation | Human-readable workbook and derived-variable dictionary |
+| `data_dictionary.csv` | Documentation | Machine-usable data dictionary |
+| `CITATION.cff` | Citation metadata | GitHub citation metadata for the paper and repository |
+| `llms.txt` | Machine-readable index | Agent/LLM orientation and canonical links |
+| `AGENTS.md` | Agent instructions | Repository-specific instructions for coding agents |
+| `LICENSE` | License | MIT license for repository code |
+
+Generated files under `Results and Figures/` are intentionally ignored and should not be committed unless a release explicitly archives them.
+
+## Authors, Funding, and Conflicts
+
+Article authors:
+
+- Scott K. Aberegg, MD, MPH
+- Brian R. Poole, MD
+- Brian W. Locke, MD, MSc
+
+Funding: no funding was reported for the study.
+
+Conflict of interest: B.W.L. advises and owns equity in Mountain Biometrics; the authors reported no other conflicts of interest in the article.
+
+## Citation
+
+Please cite the article when using this repository:
+
+> Aberegg SK, Poole BR, Locke BW. Hickam's Dictum: An Analysis of Multiple Diagnoses. *Journal of General Internal Medicine*. Published online October 28, 2024. doi:10.1007/s11606-024-09120-y.
+
+For software/repository citation metadata, use [CITATION.cff](CITATION.cff) and include the GitHub URL plus the commit or release used.
+
+## License and Reuse
+
+- Code: MIT License, see [LICENSE](LICENSE).
+- Author-created text, figures, tables, and data notes: CC BY 4.0 unless otherwise noted.
+- Third-party source material, publisher pages, linked articles, and quoted article metadata remain under their original terms.
+- Do not copy publisher-formatted PDFs or restricted third-party content into this repository.
+
+## Maintenance and Contact
+
+Open a GitHub issue or pull request for repository-specific questions. For article correspondence, use the corresponding author listed on the journal page.
+
+## Machine Readability
+
+This repository follows a public research-code orientation pattern for human and machine readers:
+
+- `README.md` gives the project overview, run path, data inventory, and citation.
+- `llms.txt` gives a compact machine-readable index.
+- `AGENTS.md` gives instructions for coding agents.
+- `CITATION.cff` gives structured citation metadata with the verified DOI.
+- `data_dictionary.md` and `data_dictionary.csv` document the workbook variables and Stata-derived variables.
